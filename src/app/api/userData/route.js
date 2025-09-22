@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import postModel from "@/app/module/userSchema";
 import connectdb from "@/app/database/mongodb";
-
+import postModel from "@/app/module/userSchema";
 async function getPosts(_id) {
   try {
     await connectdb();
