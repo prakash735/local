@@ -3,27 +3,30 @@
 import { useState } from "react";
 import { Form, Input, Button, Card, Typography, Space, message } from "antd";
 import { useRouter } from "next/navigation";
-import Login from "./pages/login/page";
-const { Title, Text } = Typography;
 
-export default function Register() {
+const { Title } = Typography;
+
+export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/userData", {
+      const res = await fetch("/api/blogs/login", { // assuming you have a login API
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
+
       const data = await res.json();
+
       if (data.success) {
-        message.success("User registered successfully!");
-        router.push("/login"); // redirect to login page
+        message.success("Login successful!");
+        // You can save token or user data here if returned from API
+        router.push("/dashboard"); // redirect after login
       } else {
-        message.error(data.error || "Registration failed");
+        message.error(data.error || "Login failed");
       }
     } catch (error) {
       message.error("Something went wrong!");
@@ -36,17 +39,9 @@ export default function Register() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-md p-6 shadow-lg">
         <Title level={3} className="text-center mb-6">
-          Register
+          Login
         </Title>
         <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item
-            label="Name"
-            name="name"
-            rules={[{ required: true, message: "Please enter your name" }]}
-          >
-            <Input placeholder="Enter your name" />
-          </Form.Item>
-
           <Form.Item
             label="Email"
             name="email"
@@ -74,14 +69,14 @@ export default function Register() {
                 loading={loading}
                 block
               >
-                Register
+                Login
               </Button>
               <Button
                 type="default"
                 block
-                onClick={() => router.push("/Login")}
+                onClick={() => router.push("/register")}
               >
-                Already have an account? Login
+                Don't have an account? Register
               </Button>
             </Space>
           </Form.Item>
