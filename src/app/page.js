@@ -1,6 +1,8 @@
 "use client"
 
+import connectdb from './database/mongodbdf';
 import { useState } from 'react';
+
 export default function Register() {
   const [formData, setFormData] = useState({
     name: '', email: '', password:
