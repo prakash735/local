@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Form, Input, Button, Card, Typography, Space, message } from "antd";
 import { useRouter } from "next/navigation";
-import Login from "./pages/login/page";
+//import Login from "./pages/login/page";
 const { Title, Text } = Typography;
 
 export default function Register() {
