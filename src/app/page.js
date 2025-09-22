@@ -1,6 +1,6 @@
 "use client"
 
-import connectdb from './database/mongodbdf';
+
 import { useState } from 'react';
 
 export default function Register() {
