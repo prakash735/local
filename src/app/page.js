@@ -1,57 +1,76 @@
 "use client"
 
 import { useState } from 'react';
-export default function Register() {
-  const [formData, setFormData] = useState({
-    name: '', email: '', password:
-      ''
-  });
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const res = await fetch('/api/blogs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert('User registered successfully');
-    } else {
-      alert('Error: ' + data.error);
-    }
-  };1
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        name="name"
-        placeholder="Name"
-        value={formData.name}
-        onChange={(e) => setFormData({...formData, name: e.target.value
-        })}
-        required
-      />
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        required
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={formData.password}
-        onChange={(e) => setFormData({...formData, password:e.target.value
-        })}
-        required
-      />
+import { Form, Input, Button, message } from 'antd';
 
-      <button type="submit">Register</button>
-    </form>
+export default function Register() {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/blogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json();
+      if (data.success) {
+        message.success('User registered successfully');
+        form.resetFields();
+      } else {
+        message.error('Error: ' + data.error);
+      }
+    } catch (err) {
+      message.error('Something went wrong!');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ maxWidth: 400, margin: '50px auto' }}>
+      <h2 style={{ textAlign: 'center' }}>Register</h2>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+      >
+        <Form.Item
+          label="Name"
+          name="name"
+          rules={[{ required: true, message: 'Please enter your name' }]}
+        >
+          <Input placeholder="Enter your name" />
+        </Form.Item>
+
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: 'Please enter your email' },
+            { type: 'email', message: 'Please enter a valid email' }
+          ]}
+        >
+          <Input placeholder="Enter your email" />
+        </Form.Item>
+
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[{ required: true, message: 'Please enter your password' }]}
+        >
+          <Input.Password placeholder="Enter your password" />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" block loading={loading}>
+            Register
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 }
