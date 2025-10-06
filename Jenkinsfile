@@ -26,13 +26,15 @@ pipeline {
             steps {
                 echo "Stopping and removing old container if exists..."
                 bat '''
-                docker ps -q --filter "name=%CONTAINER_NAME%" | findstr . 1>nul
-                if %ERRORLEVEL% == 0 (
+                @echo off
+                docker ps -q --filter "name=%CONTAINER_NAME%" | findstr . >nul 2>&1
+                if %ERRORLEVEL%==0 (
                     docker stop %CONTAINER_NAME%
                     docker rm %CONTAINER_NAME%
                 ) else (
                     echo Container %CONTAINER_NAME% not running
                 )
+                exit 0
                 '''
             }
         }
@@ -40,7 +42,10 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 echo "Running new container..."
-                bat "docker run -d -p 3000:3000 --name %CONTAINER_NAME% %DOCKER_IMAGE%"
+                bat '''
+                docker run -d -p 3000:3000 --name %CONTAINER_NAME% %DOCKER_IMAGE%
+                exit 0
+                '''
             }
         }
     }
