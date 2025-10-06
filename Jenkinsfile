@@ -14,23 +14,22 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // Build Docker image
-                sh 'docker build -t $DOCKER_IMAGE .'
+                // Use bat for Windows
+                bat 'docker build -t %DOCKER_IMAGE% .'
             }
         }
 
         stage('Stop Old Container') {
             steps {
                 // Stop and remove old container if exists
-                sh 'docker stop nextjs-demo || true'
-                sh 'docker rm nextjs-demo || true'
+                bat 'docker stop nextjs-demo || echo Container not running'
+                bat 'docker rm nextjs-demo || echo Container not found'
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                // Run new container
-                sh 'docker run -d -p 3000:3000 --name nextjs-demo $DOCKER_IMAGE'
+                bat 'docker run -d -p 3000:3000 --name nextjs-demo %DOCKER_IMAGE%'
             }
         }
     }
