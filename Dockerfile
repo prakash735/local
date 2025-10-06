@@ -24,4 +24,7 @@ COPY --from=builder /app/package*.json ./
 
 EXPOSE 3000
 
-CMD ["npx", "next", "start"]
+EXPOSE 3000
+
+CMD ["npx", "next", "start", "-H", "0.0.0.0", "-p", "3000"]
+
