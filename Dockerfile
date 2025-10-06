@@ -16,11 +16,10 @@ RUN npm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Copy only build output and necessary files
+# Copy build output and public folder
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/next.config.js ./next.config.js
 
 # Install only production dependencies
 RUN npm install --omit=dev
