@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "nextjs-demo:local"
+        CONTAINER_NAME = "nextjs-demo"
+        PORT_MAPPING = "3000:3000"
     }
 
     stages {
@@ -14,22 +16,31 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // Use bat for Windows
+                echo "Building Docker image..."
                 bat 'docker build -t %DOCKER_IMAGE% .'
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Stop and Remove Old Container') {
             steps {
-                // Stop and remove old container if exists
-                bat 'docker stop nextjs-demo || echo Container not running'
-                bat 'docker rm nextjs-demo || echo Container not found'
+                echo "Stopping and removing old container if exists..."
+                // Stop old container if running
+                bat """
+                docker ps -q --filter "name=%CONTAINER_NAME%" | findstr . > nul
+                if %ERRORLEVEL%==0 (
+                    docker stop %CONTAINER_NAME%
+                    docker rm %CONTAINER_NAME%
+                ) else (
+                    echo Container %CONTAINER_NAME% not running
+                )
+                """
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                bat 'docker run -d -p 3000:3000 --name nextjs-demo %DOCKER_IMAGE%'
+                echo "Starting new container..."
+                bat 'docker run -d -p %PORT_MAPPING% --name %CONTAINER_NAME% %DOCKER_IMAGE%'
             }
         }
     }
