@@ -14,17 +14,12 @@ RUN npm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Copy build files from builder
+# Copy build files and node_modules from builder
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
-
-# No need to run `npm install --omit=dev` again
-# If needed, you can prune devDependencies manually, but usually not required for Next.js
-
-EXPOSE 3000
+COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 
 CMD ["npx", "next", "start", "-H", "0.0.0.0", "-p", "3000"]
-
