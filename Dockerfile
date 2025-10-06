@@ -1,30 +1,32 @@
-# Stage 1 — build
+# Step 1: Build the Next.js app
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# copy package files first for layer caching
+# Copy package files and install dev dependencies for build
 COPY package*.json ./
-RUN npm install --production=false
+RUN npm install
 
-# copy sources and build
+# Copy all code
 COPY . .
+
+# Build Next.js app
 RUN npm run build
 
-# Stage 2 — runtime
+# Step 2: Prepare production image
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# copy only production deps
-COPY package*.json ./
-RUN npm install --production=true
-
-# copy built files and public
-COPY --from=builder /app/.next .next
+# Copy only build output and necessary files
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/next.config.js ./next.config.js
 
-# copy next.config if exists
-COPY --from=builder /app/node_modules ./node_modules
+# Install only production dependencies
+RUN npm install --omit=dev
 
+# Expose port
 EXPOSE 3000
-ENV NODE_ENV=production
-CMD ["npm", "start"]
+
+# Start the app
+CMD ["npx", "next", "start"]
