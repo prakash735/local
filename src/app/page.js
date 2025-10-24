@@ -29,7 +29,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center text-center py-20 px-6">
         <h2 className="text-4xl md:text-6xl font-extrabold mb-4">
-          Hi, I’m <span className="text-blue-600 dark:text-blue-400">Prakash R</span>
+          Hi, I’m <span className="text-blue-600 dark:text-blue-400">Daksha acedemy </span>
         </h2>
         <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl">
           A passionate Web Developer crafting beautiful and efficient web experiences.
