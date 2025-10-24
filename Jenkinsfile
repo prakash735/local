@@ -1,35 +1,60 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24-dind'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-        }
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "nextjs-demo:local"
+        CONTAINER_NAME = "nextjs-demo"
+        HOST_PORT = "80"
+        CONTAINER_PORT = "3000"
     }
+
     stages {
+
         stage('Checkout') {
             steps {
+                echo "Checking out code..."
                 git branch: 'main', url: 'https://github.com/prakash735/local.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t nextjs-demo:local .'
+                echo 'Building Docker image...'
+                sh 'docker build -t ${DOCKER_IMAGE} .'
             }
         }
-        stage('Stop Old Container') {
+
+        stage('Stop and Remove Old Container') {
             steps {
+                echo "Stopping and removing old container if exists..."
                 sh '''
-                if [ "$(docker ps -q -f name=nextjs-demo)" ]; then
-                    docker stop nextjs-demo || true
-                    docker rm nextjs-demo || true
+                if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+                    echo "Stopping old container..."
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                else
+                    echo "No old container found."
                 fi
                 '''
             }
         }
-        stage('Run Container') {
+
+        stage('Run Docker Container') {
             steps {
-                sh 'docker run -d -p 80:3000 --name nextjs-demo nextjs-demo:local'
+                echo "Running new container..."
+                sh '''
+                docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${DOCKER_IMAGE}
+                '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Next.js app deployed successfully! Visit your EC2 public IP."
+        }
+        failure {
+            echo "❌ Deployment failed. Check console output."
         }
     }
 }
