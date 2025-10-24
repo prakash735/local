@@ -15,27 +15,24 @@ pipeline {
             }
         }
 
-  stage('Build Docker Image') {
-    steps {
-        echo 'Building Docker image...'
-        sh 'sudo docker build -t nextjs-app .'
-    }
-}
-
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image...'
+                // Remove sudo after giving jenkins docker permission
+                sh 'docker build -t ${DOCKER_IMAGE} .'
+            }
+        }
 
         stage('Stop and Remove Old Container') {
             steps {
                 echo "Stopping and removing old container if exists..."
-                bat '''
-                @echo off
-                docker ps -q --filter "name=%CONTAINER_NAME%" | findstr . >nul 2>&1
-                if %ERRORLEVEL%==0 (
-                    docker stop %CONTAINER_NAME%
-                    docker rm %CONTAINER_NAME%
-                ) else (
-                    echo Container %CONTAINER_NAME% not running
-                )
-                exit 0
+                sh '''
+                if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+                else
+                    echo "No old container found."
+                fi
                 '''
             }
         }
@@ -43,9 +40,8 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 echo "Running new container..."
-                bat '''
-                docker run -d -p 3000:3000 --name %CONTAINER_NAME% %DOCKER_IMAGE%
-                exit 0
+                sh '''
+                docker run -d -p 80:3000 --name $CONTAINER_NAME $DOCKER_IMAGE
                 '''
             }
         }
@@ -53,10 +49,10 @@ pipeline {
 
     post {
         success {
-            echo "Next.js app deployed successfully on http://localhost:3000"
+            echo "✅ Next.js app deployed successfully! Visit your EC2 public IP."
         }
         failure {
-            echo "Deployment failed. Check console output."
+            echo "❌ Deployment failed. Check console output."
         }
     }
 }
