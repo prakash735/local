@@ -4,8 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = "nextjs-demo:local"
         CONTAINER_NAME = "nextjs-demo"
-        HOST_PORT = "3000"
-        CONTAINER_PORT = "3000"
     }
 
     stages {
@@ -19,22 +17,24 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t ${DOCKER_IMAGE} .'
+                echo "Building Docker image..."
+                bat "docker build -t %DOCKER_IMAGE% ."
             }
         }
 
         stage('Stop and Remove Old Container') {
             steps {
                 echo "Stopping and removing old container if exists..."
-                sh '''
-                if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
-                    echo "Stopping old container..."
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-                else
-                    echo "No old container found."
-                fi
+                bat '''
+                @echo off
+                docker ps -q --filter "name=%CONTAINER_NAME%" | findstr . >nul 2>&1
+                if %ERRORLEVEL%==0 (
+                    docker stop %CONTAINER_NAME%
+                    docker rm %CONTAINER_NAME%
+                ) else (
+                    echo Container %CONTAINER_NAME% not running
+                )
+                exit 0
                 '''
             }
         }
@@ -42,8 +42,9 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 echo "Running new container..."
-                sh '''
-                docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${DOCKER_IMAGE}
+                bat '''
+                docker run -d -p 3000:3000 --name %CONTAINER_NAME% %DOCKER_IMAGE%
+                exit 0
                 '''
             }
         }
@@ -51,10 +52,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Next.js app deployed successfully! Visit your EC2 public IP."
+            echo "Next.js app deployed successfully on http://localhost:3000"
         }
         failure {
-            echo "❌ Deployment failed. Check console output."
+            echo "Deployment failed. Check console output."
         }
     }
 }
