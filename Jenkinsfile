@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "nextjs-demo:local"
         CONTAINER_NAME = "nextjs-demo"
-        HOST_PORT = "80"
+        HOST_PORT = "3000"
         CONTAINER_PORT = "3000"
     }
 
