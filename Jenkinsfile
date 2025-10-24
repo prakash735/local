@@ -15,12 +15,13 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image..."
-                bat "docker build -t %DOCKER_IMAGE% ."
-            }
-        }
+  stage('Build Docker Image') {
+    steps {
+        echo 'Building Docker image...'
+        sh 'sudo docker build -t nextjs-app .'
+    }
+}
+
 
         stage('Stop and Remove Old Container') {
             steps {
