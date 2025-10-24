@@ -4,6 +4,8 @@ pipeline {
     environment {
         DOCKER_IMAGE = "nextjs-demo:local"
         CONTAINER_NAME = "nextjs-demo"
+        HOST_PORT = "80"
+        CONTAINER_PORT = "3000"
     }
 
     stages {
@@ -18,7 +20,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                // Remove sudo after giving jenkins docker permission
                 sh 'docker build -t ${DOCKER_IMAGE} .'
             }
         }
@@ -27,9 +28,10 @@ pipeline {
             steps {
                 echo "Stopping and removing old container if exists..."
                 sh '''
-                if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
-                    docker stop $CONTAINER_NAME || true
-                    docker rm $CONTAINER_NAME || true
+                if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+                    echo "Stopping old container..."
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
                 else
                     echo "No old container found."
                 fi
@@ -41,7 +43,7 @@ pipeline {
             steps {
                 echo "Running new container..."
                 sh '''
-                docker run -d -p 80:3000 --name $CONTAINER_NAME $DOCKER_IMAGE
+                docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${DOCKER_IMAGE}
                 '''
             }
         }
